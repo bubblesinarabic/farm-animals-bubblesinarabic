@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>حيوانات المزرعة - وحدة تعليمية تفاعلية</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #10B981; 
+      --primary-hover: #059669;
+      --secondary: #3B82F6; 
+      --secondary-hover: #2563EB;
+      --accent: #FDE047; 
+      --card-bg: rgba(255, 255, 255, 0.96); 
+      --text-dark: #1F2937;
+      --text-light: #6B7280;
+    }
+
+    body {
+      font-family: 'Almarai', sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: var(--text-dark);
+      background: linear-gradient(180deg, #7DD3FC 0%, #BAE6FD 55%, #86EFAC 55%, #22C55E 100%);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* تأثيرات الشمس والسحب المتحركة */
+    .sun { position: fixed; top: 5%; right: 10%; width: 100px; height: 100px; background: #FFD700; border-radius: 50%; box-shadow: 0 0 40px #FFD700, 0 0 80px #FF8C00; animation: sunPulse 3s infinite alternate; z-index: 1; }
+    @keyframes sunPulse { 0% { transform: scale(1); box-shadow: 0 0 40px #FFD700, 0 0 80px #FF8C00; } 100% { transform: scale(1.1); box-shadow: 0 0 60px #FFD700, 0 0 100px #FF8C00; } }
+    .cloud { background: #FFFFFF; position: fixed; border-radius: 50px; animation: moveClouds linear infinite; z-index: 1; opacity: 0.9; }
+    .cloud::before, .cloud::after { content: ''; position: absolute; background: #FFFFFF; border-radius: 50%; }
+    .cloud::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+    .cloud::after { width: 50px; height: 50px; top: -20px; right: 20px; }
+    .cloud1 { width: 150px; height: 50px; top: 15%; left: -200px; animation-duration: 40s; }
+    .cloud2 { width: 100px; height: 35px; top: 25%; left: -150px; opacity: 0.7; animation-duration: 30s; animation-delay: 5s; }
+    .cloud2::before { width: 40px; height: 40px; top: -20px; left: 15px; }
+    .cloud2::after { width: 35px; height: 35px; top: -15px; right: 15px; }
+    .cloud3 { width: 200px; height: 60px; top: 8%; left: -250px; opacity: 0.8; animation-duration: 55s; animation-delay: 15s; }
+    .cloud3::before { width: 80px; height: 80px; top: -40px; left: 30px; }
+    .cloud3::after { width: 70px; height: 70px; top: -30px; right: 30px; }
+    @keyframes moveClouds { 0% { left: -250px; } 100% { left: 100vw; } }
+
+    /* الحاوية الرئيسية للتطبيق */
+    .lms-container {
+      width: 100%; max-width: 1000px; background: var(--card-bg); border-radius: 20px; box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+      overflow: hidden; display: flex; flex-direction: column; position: relative; z-index: 10; border: 5px solid white;
+    }
+
+    /* الترويسة */
+    .header-container { background-image: url("https://raw.githubusercontent.com/bubblesinarabic/farm-animals-bubblesinarabic/main/background.png"); background-size: cover; background-position: center; padding: 60px 20px 30px; text-align: center; position: relative; color: white; border-bottom: 5px solid var(--accent); }
+    .header-container::before { content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+    .header-container h1, .header-container div { position: relative; z-index: 1; }
+    .header-container h1 { margin: 0; font-size: 36px; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.6); }
+    .brand-tag { display: inline-block; margin-top: 10px; background: var(--primary); padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    /* نظام الشرائح */
+    .slide-wrapper { flex-grow: 1; position: relative; padding: 20px; overflow-y: auto; height: 600px; }
+    .slide { display: none; animation: fadeIn 0.4s; }
+    .slide.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* أزرار وعناوين الشرائح */
+    .slide-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #E5E7EB; padding-bottom: 10px; margin-bottom: 20px; }
+    .slide-header h2 { margin: 0; color: var(--secondary); display: flex; align-items: center; gap: 8px;}
+    .btn-back { background: white; border: 2px solid var(--text-light); padding: 8px 16px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; font-family: inherit;}
+    .btn-back:hover { background: #F3F4F6; }
+    .btn-main { background: var(--secondary); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; font-family: inherit; }
+    .btn-main:hover { background: var(--secondary-hover); }
+
+    /* الشريحة 0: القائمة الرئيسية */
+    .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+    .menu-btn { background: white; border: 2px solid #E5E7EB; padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; font-weight: bold; color: var(--text-dark); display: flex; flex-direction: column; align-items: center; gap: 10px; font-family: inherit; font-size: 16px; box-shadow: 0 4px 0 #E5E7EB;}
+    .menu-btn i { color: var(--primary); width: 32px; height: 32px; }
+    .menu-btn:hover { border-color: var(--primary); transform: translateY(2px); box-shadow: 0 2px 0 var(--primary); }
+
+    /* الشريحة 1: استمع واقرأ */
+    .audio-controls { background: #E0F2FE; padding: 15px; border-radius: 12px; display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;}
+    .speed-select { padding: 8px; border-radius: 8px; border: 2px solid var(--secondary); font-family: inherit; font-weight: bold; cursor: pointer; background: white;}
+    .read-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+    .read-text { flex: 2; font-size: 24px; line-height: 2.2; background: #FFFBEB; padding: 20px; border-radius: 15px; border: 2px solid var(--accent); min-width: 300px;}
+    .read-info { flex: 1; text-align: center; background: white; padding: 20px; border-radius: 15px; border: 2px solid #E5E7EB; min-width: 250px;}
+    .has-vocab { color: var(--secondary); font-weight: bold; text-decoration: underline; text-decoration-style: dashed; cursor: pointer; transition: 0.2s; padding: 0 5px;}
+    .has-vocab:hover { background: var(--accent); border-radius: 5px; }
+    .vocab-thumb { width: 120px; height: 120px; object-fit: contain; border-radius: 10px; margin: 10px 0; border: 2px solid var(--primary); padding: 5px; background: #fff;}
+
+    /* الشريحة 2: البطاقات */
+    .fc-container { perspective: 1000px; width: 300px; height: 350px; margin: 0 auto 20px; cursor: pointer; }
+    .fc-card { width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; position: relative; }
+    .fc-card.flipped { transform: rotateY(180deg); }
+    .fc-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 20px; border: 4px solid var(--primary); background: white; font-size: 38px; font-weight: bold;}
+    .fc-front img { width: 140px; height: 140px; object-fit: contain; margin-bottom: 15px; }
+    .fc-back { background: var(--primary); color: white; transform: rotateY(180deg); }
+    .fc-nav { display: flex; justify-content: center; gap: 15px; }
+
+    /* الشريحة 3: ترتيب الحروف */
+    .spell-slots { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; direction: rtl; min-height: 60px;}
+    .spell-slot { width: 60px; height: 60px; border-bottom: 4px solid var(--text-dark); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: var(--secondary);}
+    .spell-letters { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; direction: ltr;}
+    .spell-letter { width: 50px; height: 50px; background: white; border: 2px solid var(--secondary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 var(--secondary);}
+    .spell-controls { display: flex; justify-content: center; gap: 15px; margin-top: 25px; }
+
+    /* الشريحة 4: الفهم */
+    .mcq-box { background: #F9FAFB; padding: 20px; border-radius: 15px; margin-bottom: 15px; border: 2px solid #E5E7EB; }
+    .mcq-box p { font-size: 20px; font-weight: bold; margin-top: 0; }
+    .mcq-opt { display: block; width: 100%; text-align: right; padding: 15px; margin-bottom: 10px; border: 2px solid #E5E7EB; background: white; border-radius: 10px; cursor: pointer; font-size: 18px; font-family: inherit; transition: 0.2s;}
+    .mcq-opt.correct { background: #D1FAE5; border-color: var(--primary); color: #065F46; }
+    .mcq-opt.wrong { background: #FEE2E2; border-color: #EF4444; color: #991B1B; }
+
+    /* الشريحة 5: السحب والإفلات */
+    .sort-layout { display: flex; gap: 20px; }
+    .sort-zone { flex: 1; min-height: 200px; background: #F3F4F6; border: 3px dashed var(--secondary); border-radius: 15px; padding: 15px; text-align: center; }
+    .sort-zone h3 { margin-top: 0; color: var(--secondary); }
+    .draggable-items { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; padding: 20px; background: white; border-radius: 15px; border: 2px solid #E5E7EB;}
+    .drag-item { background: var(--accent); padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: grab; user-select: none; border: 2px solid #EAB308;}
+
+    /* الشريحة 6: التلوين والتعبئة */
+    .canvas-wrapper { position: relative; width: 500px; height: 300px; margin: 0 auto; border: 4px solid var(--text-dark); border-radius: 15px; overflow: hidden; background: white; }
+    .tools-panel { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;}
+    .color-btn { width: 35px; height: 35px; border-radius: 50%; border: 3px solid #E5E7EB; cursor: pointer; transition: 0.2s;}
+    .color-btn.active-color { border-color: var(--text-dark); transform: scale(1.1); }
+    .active-tool { border-color: var(--primary) !important; color: var(--primary) !important; background: #ECFDF5 !important; }
+
+    /* الشريحة 7: التوصيل بالرسم */
+    .match-board { position: relative; display: flex; justify-content: space-between; padding: 20px; background: #F9FAFB; border-radius: 15px; border: 2px solid #E5E7EB; touch-action: none;}
+    .match-col { display: flex; flex-direction: column; gap: 20px; z-index: 2; width: 30%;}
+    .match-item { background: white; border: 2px solid var(--secondary); padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; font-size: 20px; display:flex; align-items:center; justify-content:center; min-height: 60px; user-select: none; touch-action: none; position: relative; z-index: 2;}
+    .match-item.draggable-word { cursor: pointer; }
+    .match-item.draggable-word:active { transform: scale(0.95); }
+    .match-item img { max-height: 60px; object-fit: contain; pointer-events: none;}
+    .match-item.matched { background: #D1FAE5; border-color: var(--primary); opacity: 0.8;}
+    .match-item.locked-wrong { border-color: #EF4444; background: #FEE2E2; opacity: 0.6; cursor: not-allowed;}
+
+    /* الشريحة 8: النقاط التفاعلية */
+    .hotspot-container { position: relative; width: 100%; max-width: 900px; margin: 0 auto; border: 4px solid var(--primary); border-radius: 15px; overflow: hidden; }
+    .hotspot-container img { width: 100%; display: block; }
+    .hotspot-btn { position: absolute; width: 30px; height: 30px; background: var(--accent); border: 3px solid white; border-radius: 50%; cursor: pointer; animation: pulse 1.5s infinite; transform: translate(-50%, -50%); z-index: 2;}
+    .tooltip { position: absolute; background: white; color: var(--text-dark); padding: 5px 10px; border-radius: 8px; font-weight: bold; border: 2px solid var(--primary); display: none; transform: translate(-50%, -120%); white-space: nowrap; z-index: 3;}
+
+    /* الشريحة 9: الشهادة */
+    .cert-input-wrap { text-align: center; margin-bottom: 20px; }
+    .cert-input-wrap input { padding: 10px; font-size: 18px; border: 2px solid #E5E7EB; border-radius: 8px; font-family: inherit; }
+    .certificate-box { width: 700px; height: 500px; margin: 0 auto; background-image: url('https://raw.githubusercontent.com/bubblesinarabic/farm-animals-bubblesinarabic/main/background.png'); background-size: cover; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-dark); border: 5px solid #E5E7EB;}
+    .cert-overlay { background: rgba(255,255,255,0.85); border-radius: 15px; padding: 40px; text-align: center; border: 3px dashed var(--secondary); }
+    .cert-name-disp { font-size: 40px; font-weight: bold; margin-top: 20px; color: var(--primary); border-bottom: 2px solid var(--primary); min-width: 300px; text-align: center;}
+    
+    /* أزرار التنقل السفلية */
+    .slide-footer-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 3px dashed #E2E8F0; }
+    .nav-btn { background: var(--secondary); color: white; border: 2px solid #2563EB; padding: 10px 24px; border-radius: 12px; font-size: 16px; cursor: pointer; font-family: inherit; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 0 #2563EB; }
+    .nav-btn:hover { background: #1D4ED8; transform: translateY(2px); box-shadow: 0 2px 0 #2563EB; }
+  </style>
+</head>
+<body>
+
+  <div class="sun"></div>
+  <div class="cloud cloud1"></div>
+  <div class="cloud cloud2"></div>
+  <div class="cloud cloud3"></div>
+
+  <div class="lms-container">
+    
+    <div class="header-container">
+      <h1>حيوانات المزرعة</h1>
+      <div class="brand-tag">تعلم اللغة العربية بطريقة تفاعلية</div>
+    </div>
+
+    <div class="slide-wrapper">
+      
+      <div class="slide active" id="slide-0">
+        <h2 style="text-align:center; color: var(--primary);">اختر النشاط</h2>
+        <div class="menu-grid">
+          <button class="menu-btn" onclick="goToSlide(1)"><i data-lucide="headphones"></i> استمع واقرأ</button>
+          <button class="menu-btn" onclick="goToSlide(2)"><i data-lucide="layers"></i> البطاقات التعليمية</button>
+          <button class="menu-btn" onclick="goToSlide(3)"><i data-lucide="spell-check"></i> ترتيب الحروف</button>
+          <button class="menu-btn" onclick="goToSlide(4)"><i data-lucide="help-circle"></i> أسئلة الفهم</button>
+          <button class="menu-btn" onclick="goToSlide(5)"><i data-lucide="arrow-down-up"></i> طيور وحيوانات</button>
+          <button class="menu-btn" onclick="goToSlide(6)"><i data-lucide="palette"></i> لوّن المشهد</button>
+          <button class="menu-btn" onclick="goToSlide(7)"><i data-lucide="link"></i> صل الكلمة بالصورة</button>
+          <button class="menu-btn" onclick="goToSlide(8)"><i data-lucide="search"></i> اكتشف المزرعة</button>
+          <button class="menu-btn" onclick="goToSlide(9)"><i data-lucide="award"></i> الشهادة</button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-1">
+        <div class="slide-header"><h2><i data-lucide="headphones"></i> استمع واقرأ</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        
+        <div class="audio-controls">
+          <audio id="main-audio" src="https://raw.githubusercontent.com/bubblesinarabic/farm-animals-bubblesinarabic/main/morninganimals.mov"></audio>
+          <button class="btn-main" onclick="document.getElementById('main-audio').play()"><i data-lucide="play"></i> تشغيل القصة</button>
+          <button class="btn-back" onclick="document.getElementById('main-audio').pause()"><i data-lucide="pause"></i> إيقاف مؤقت</button>
+          <button class="btn-back" onclick="resetAudio()"><i data-lucide="rotate-ccw"></i> إعادة</button>
+          
+          <select id="audio-speed" class="speed-select" onchange="changeAudioSpeed()">
+            <option value="0.5">سرعة بطيئة جداً (x0.5)</option>
+            <option value="0.75">سرعة بطيئة (x0.75)</option>
+            <option value="1" selected>سرعة عادية (x1.0)</option>
+            <option value="1.25">سرعة سريعة (x1.25)</option>
+            <option value="1.5">سرعة سريعة جداً (x1.5)</option>
+          </select>
+        </div>
+
+        <div class="read-layout">
+          <div class="read-text">
+            في الصباح الباكر، ذهبنا إلى المزرعة.<br>
+            رأينا <span class="has-vocab" onclick="showVocab('حصان')">الحصان</span> يركض بسرعة، و <span class="has-vocab" onclick="showVocab('خروف')">الخروف</span> يأكل العشب.<br>
+            وفي الحظيرة كانت هناك <span class="has-vocab" onclick="showVocab('دجاجة')">دجاجة</span> تعتني بـ <span class="has-vocab" onclick="showVocab('كتكوت')">كتكوت</span> صغير.<br>
+            شاهدنا <span class="has-vocab" onclick="showVocab('بطة')">البطة</span> تسبح، ورأينا <span class="has-vocab" onclick="showVocab('خنزير')">الخنزير</span> يلعب.<br>
+            ولاحظنا <span class="has-vocab" onclick="showVocab('قطة')">القطة</span> تنام بهدوء.<br>
+            كان الـ<span class="has-vocab" onclick="showVocab('مزارع')">مزارع</span> يعمل بجد، بينما كان <span class="has-vocab" onclick="showVocab('كلب')">الكلب</span> يحرس المكان.
+          </div>
+          <div class="read-info" id="vocab-info">
+            <i data-lucide="info" style="width:40px;height:40px;color:#9CA3AF;"></i>
+            <p>اضغط على الكلمات المحددة في القصة لمعرفة تفاصيلها.</p>
+          </div>
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goToSlide(0)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(1)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-2">
+        <div class="slide-header"><h2><i data-lucide="layers"></i> البطاقات التعليمية</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <div class="fc-container" onclick="this.querySelector('.fc-card').classList.toggle('flipped')">
+          <div class="fc-card" id="flashcard-el">
+            <div class="fc-face fc-front">
+              <img id="fc-img" src="" alt="صورة الحيوان" onerror="this.src='https://via.placeholder.com/140?text=بدون+صورة'">
+              <div id="fc-front-word">الكلمة</div>
+            </div>
+            <div class="fc-face fc-back">
+              <span id="fc-trans" style="font-size:24px; opacity:0.9; color: var(--accent);">Transliteration</span>
+              <span id="fc-def" style="margin-top:15px; font-size:32px;">المعنى</span>
+              <button class="btn-back" style="margin-top:20px; color: var(--text-dark);" onclick="event.stopPropagation(); playCardAudio();"><i data-lucide="volume-2"></i> استمع</button>
+            </div>
+          </div>
+        </div>
+        <div class="fc-nav">
+          <button class="btn-back" onclick="navCard(-1)">البطاقة السابقة</button>
+          <button class="btn-main" onclick="navCard(1)">البطاقة التالية</button>
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(2)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(2)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-3">
+        <div class="slide-header"><h2><i data-lucide="spell-check"></i> ترتيب الحروف</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <p style="text-align:center; font-size:20px;">رتب الحروف لتكوين الكلمة: <strong id="spell-hint" style="color:var(--primary);"></strong></p>
+        <div style="text-align: center;"><img id="spell-img-hint" src="" style="width:100px; height:100px; object-fit:contain; margin-bottom: 10px;"></div>
+        
+        <div class="spell-slots" id="spell-slots"></div>
+        <div class="spell-letters" id="spell-letters"></div>
+        
+        <div class="spell-controls">
+          <button class="btn-back" onclick="clearSpell()"><i data-lucide="eraser"></i> مسح</button>
+          <button class="btn-main" onclick="submitSpell()"><i data-lucide="check-circle"></i> إرسال (تحقق)</button>
+        </div>
+        <div style="text-align:center; margin-top:15px;"><button class="btn-back" style="margin:0 auto;" onclick="loadSpell()">كلمة جديدة</button></div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(3)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(3)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-4">
+        <div class="slide-header"><h2><i data-lucide="help-circle"></i> أسئلة الفهم</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <div id="mcq-container"></div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(4)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(4)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-5">
+        <div class="slide-header"><h2><i data-lucide="arrow-down-up"></i> صنف الحيوانات</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <p style="text-align:center; font-weight:bold;">اسحب كل كائن وضعه في المكان الصحيح:</p>
+        <div class="draggable-items" id="drag-source" ondragover="event.preventDefault()" ondrop="drop(event)"></div>
+        <div class="sort-layout">
+          <div class="sort-zone" id="zone-طيور" ondragover="event.preventDefault()" ondrop="drop(event)">
+            <h3>طيور (Birds)</h3>
+          </div>
+          <div class="sort-zone" id="zone-حيوانات" ondragover="event.preventDefault()" ondrop="drop(event)">
+            <h3>حيوانات (Animals)</h3>
+          </div>
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(5)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(5)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-6">
+        <div class="slide-header"><h2><i data-lucide="palette"></i> لوّن المشهد</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        
+        <div class="canvas-wrapper">
+          <canvas id="paintCanvas" width="500" height="300" style="touch-action: none; position: absolute; top: 0; left: 0; cursor: crosshair; z-index: 1;"></canvas>
+        </div>
+
+        <div class="tools-panel" id="color-palette">
+          <button class="color-btn active-color" style="background:#EF4444;" onclick="setColor(this, '#EF4444')"></button>
+          <button class="color-btn" style="background:#3B82F6;" onclick="setColor(this, '#3B82F6')"></button>
+          <button class="color-btn" style="background:#10B981;" onclick="setColor(this, '#10B981')"></button>
+          <button class="color-btn" style="background:#F59E0B;" onclick="setColor(this, '#F59E0B')"></button>
+          <button class="color-btn" style="background:#1F2937;" onclick="setColor(this, '#1F2937')"></button>
+          
+          <div style="border-left: 2px solid #E5E7EB; margin: 0 10px; height: 40px;"></div>
+          
+          <button class="btn-back active-tool" id="tool-brush" onclick="setTool('brush')"><i data-lucide="pen-tool"></i> فرشاة</button>
+          <button class="btn-back" id="tool-fill" onclick="setTool('fill')"><i data-lucide="paint-bucket"></i> تعبئة</button>
+          <button class="btn-back" id="tool-eraser" onclick="setTool('eraser')"><i data-lucide="eraser"></i> ممحاة</button>
+          <button class="btn-back" onclick="initCanvas()"><i data-lucide="trash"></i> مسح الكل</button>
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(6)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(6)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-7">
+        <div class="slide-header"><h2><i data-lucide="link"></i> صل الكلمة بالصورة</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <p style="text-align:center; font-weight:bold; margin-top:0;">اسحب خطاً بإصبعك من الكلمة إلى الصورة المناسبة:</p>
+        
+        <div class="match-board" id="match-board">
+          <svg id="match-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;"></svg>
+          <div class="match-col" id="m-words"></div>
+          <div class="match-col" id="m-icons"></div>
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(7)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(7)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-8">
+        <div class="slide-header"><h2><i data-lucide="search"></i> اكتشف المزرعة</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <p style="text-align:center; margin-top:0;">اضغط على النقاط المضيئة لسماع الأصوات.</p>
+        
+        <div class="hotspot-container" id="hotspot-container">
+          <img src="https://raw.githubusercontent.com/bubblesinarabic/farm-animals-bubblesinarabic/main/background.png" alt="المزرعة">
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(8)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goNextSlide(8)">التالي <i data-lucide="arrow-left"></i></button>
+        </div>
+      </div>
+
+      <div class="slide" id="slide-9">
+        <div class="slide-header"><h2><i data-lucide="award"></i> الشهادة</h2><button class="btn-back" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة</button></div>
+        <div class="cert-input-wrap">
+          <input type="text" id="student-name" placeholder="اكتب اسمك هنا...">
+          <button class="btn-main" onclick="genCert()">إنشاء الشهادة</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <div class="certificate-box" id="cert-node">
+            <div class="cert-overlay">
+              <h2 style="font-size:32px; color:#1F2937; margin-top:0;">شهادة إتمام الدرس</h2>
+              <div class="cert-name-disp" id="display-name">---</div>
+              <p style="font-size:24px; color:#1F2937;">لإتمامه درس "حيوانات المزرعة" بنجاح!</p>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center; margin-top:20px;">
+          <button class="btn-main" style="background:var(--primary);" onclick="downloadCert()">تحميل الصورة</button>
+        </div>
+
+        <div class="slide-footer-nav">
+          <button class="nav-btn" onclick="goPrevSlide(9)"><i data-lucide="arrow-right"></i> السابق</button>
+          <button class="nav-btn" onclick="goToSlide(0)"><i data-lucide="home"></i> القائمة الرئيسية</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const baseUrl = "https://raw.githubusercontent.com/bubblesinarabic/farm-animals-bubblesinarabic/main/";
+
+    function playFeedback(type) {
+      if(type === 'correct') {
+        new Audio(baseUrl + 'welldone.mp3').play();
+      } else {
+        new Audio(baseUrl + 'tryagain.mp3').play();
+      }
+    }
+
+    const vocabData = [
+      { word: "حصان", trans: "Hisaan", def: "Horse", img: baseUrl + "horse.png", audio: baseUrl + "horse.mp3", audioText: baseUrl + "the-horse.mp3" },
+      { word: "خروف", trans: "Kharoof", def: "Sheep", img: baseUrl + "sheep.png", audio: baseUrl + "sheep.mp3", audioText: baseUrl + "the-sheep.mp3" },
+      { word: "دجاجة", trans: "Dajaaja", def: "Hen", img: baseUrl + "chicken.png", audio: baseUrl + "chicken.mp3", audioText: baseUrl + "the-hen.mp3" },
+      { word: "كتكوت", trans: "Katkoot", def: "Chick", img: baseUrl + "CHICK.png", audio: baseUrl + "chick.mp3", audioText: baseUrl + "the-chick.mov" },
+      { word: "بطة", trans: "Batta", def: "Duck", img: baseUrl + "duck.png", audio: baseUrl + "duck.mp3", audioText: baseUrl + "the-duck.mp3" },
+      { word: "خنزير", trans: "Khinzeer", def: "Pig", img: baseUrl + "Pig.png", audio: baseUrl + "pig.mp3", audioText: baseUrl + "the-pig.mp3" },
+      { word: "مزارع", trans: "Muzaari'", def: "Farmer", img: baseUrl + "farmer.png", audio: baseUrl + "farmer.mp3", audioText: baseUrl + "the-farmer.mp3" },
+      { word: "كلب", trans: "Kalb", def: "Dog", img: baseUrl + "dog.png", audio: baseUrl + "كلب.mp3", audioText: baseUrl + "the-dog.mp3" },
+      { word: "بقرة", trans: "Baqara", def: "Cow", img: baseUrl + "cow.png", audio: baseUrl + "cow.mp3", audioText: baseUrl + "the-cow.mp3" },
+      { word: "قطة", trans: "Qitta", def: "Cat", img: baseUrl + "cat.png", audio: baseUrl + "cat.mp3", audioText: baseUrl + "the-cat.mp3" }
+    ];
+
+    const mcqData = [
+      { q: "ماذا كان يفعل الحصان في المزرعة؟", opts: ["يأكل العشب", "يسبح", "يركض بسرعة"], a: "يركض بسرعة" },
+      { q: "من الذي كان يعتني بالكتكوت الصغير؟", opts: ["البطة", "الدجاجة", "الخروف"], a: "الدجاجة" },
+      { q: "من كان يحرس المكان؟", opts: ["الكلب", "المزارع", "الخنزير"], a: "الكلب" }
+    ];
+
+    const sortData = [
+      { w: "دجاجة", cat: "طيور" }, { w: "بطة", cat: "طيور" }, { w: "كتكوت", cat: "طيور" },
+      { w: "حصان", cat: "حيوانات" }, { w: "خروف", cat: "حيوانات" }, { w: "كلب", cat: "حيوانات" }, { w: "خنزير", cat: "حيوانات" }, { w: "قطة", cat: "حيوانات" }
+    ];
+
+    const hotspotData = [
+      { label: "كلب", x: "20%", y: "50%", audio: baseUrl + "كلب.mp3" },
+      { label: "خروف", x: "27%", y: "90%", audio: baseUrl + "sheep.mp3" },
+      { label: "قطة", x: "19%", y: "90%", audio: baseUrl + "cat.mp3" },
+      { label: "خنزير", x: "40%", y: "65%", audio: baseUrl + "pig.mp3" },
+      { label: "بقرة", x: "50%", y: "80%", audio: baseUrl + "cow.mp3" },
+      { label: "بطة", x: "5%", y: "77%", audio: baseUrl + "duck.mp3" },
+      { label: "كتكوت", x: "80%", y: "70%", audio: baseUrl + "chick.mp3" },
+      { label: "مزارع", x: "40%", y: "40%", audio: baseUrl + "farmer.mp3" },
+      { label: "دجاجة", x: "95%", y: "88%", audio: baseUrl + "chicken.mp3" },
+      { label: "حصان", x: "70%", y: "45%", audio: baseUrl + "horse.mp3" }
+    ];
+
+    const slideOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9]; 
+
+    function goToSlide(n) {
+      document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+      document.getElementById(`slide-${n}`).classList.add('active');
+
+      if(n===2) loadCard();
+      if(n===3) loadSpell();
+      if(n===4) renderMCQ();
+      if(n===5) renderSort();
+      if(n===6) initCanvas();
+      if(n===7) renderMatch();
+      if(n===8) renderHotspots();
+    }
+
+    function goNextSlide(currentId) {
+      let currentIndex = slideOrder.indexOf(currentId);
+      if (currentIndex < slideOrder.length - 1) goToSlide(slideOrder[currentIndex + 1]);
+    }
+
+    function goPrevSlide(currentId) {
+      let currentIndex = slideOrder.indexOf(currentId);
+      if (currentIndex > 0) goToSlide(slideOrder[currentIndex - 1]);
+      else goToSlide(0); 
+    }
+
+    function changeAudioSpeed() {
+      const audio = document.getElementById('main-audio');
+      const speed = document.getElementById('audio-speed').value;
+      audio.playbackRate = parseFloat(speed);
+    }
+    function resetAudio() {
+      const a = document.getElementById('main-audio');
+      a.pause(); a.currentTime = 0;
+    }
+    function showVocab(w) {
+      const item = vocabData.find(x => x.word === w);
+      if(!item) return;
+      document.getElementById('vocab-info').innerHTML = `
+        <h3 style="color:var(--primary); font-size: 28px;">${item.word}</h3>
+        <p style="color:var(--text-light); font-size: 18px;">${item.trans}</p>
+        <p style="font-size: 20px;"><strong>${item.def}</strong></p>
+        <img src="${item.img}" class="vocab-thumb" onerror="this.src='https://via.placeholder.com/120?text=؟'">
+        <br><button class="btn-main" onclick="new Audio('${item.audioText}').play()"><i data-lucide="volume-2"></i> استمع للكلمة</button>
+      `;
+      lucide.createIcons();
+    }
+
+    let cIdx = 0;
+    function loadCard() {
+      const el = document.getElementById('flashcard-el');
+      el.classList.remove('flipped');
+      setTimeout(() => {
+        document.getElementById('fc-front-word').innerText = vocabData[cIdx].word;
+        document.getElementById('fc-img').src = vocabData[cIdx].img;
+        document.getElementById('fc-trans').innerText = vocabData[cIdx].trans;
+        document.getElementById('fc-def').innerText = vocabData[cIdx].def;
+      }, 150);
+    }
+    function navCard(dir) {
+      cIdx = (cIdx + dir + vocabData.length) % vocabData.length;
+      loadCard();
+    }
+    function playCardAudio() {
+      new Audio(vocabData[cIdx].audio).play();
+    }
+
+    let sIdx = 0; 
+    let sWordTarget = ""; 
+    let currentAttempt = [];
+
+    function loadSpell() {
+      const item = vocabData[sIdx];
+      document.getElementById('spell-hint').innerText = item.def;
+      document.getElementById('spell-img-hint').src = item.img;
+      sWordTarget = item.word;
+      currentAttempt = [];
+      const sWordArr = item.word.split('');
+      document.getElementById('spell-slots').innerHTML = sWordArr.map((_, i)=>`<div class="spell-slot" id="slot-${i}"></div>`).join('');
+      const shuffled = [...sWordArr].sort(()=>Math.random()-0.5);
+      document.getElementById('spell-letters').innerHTML = shuffled.map((l, i) => `<div class="spell-letter" onclick="tryLetter(this, '${l}')">${l}</div>`).join('');
+      sIdx = (sIdx + 1) % vocabData.length;
+    }
+
+    function tryLetter(btn, l) {
+      if(currentAttempt.length < sWordTarget.length) {
+        currentAttempt.push({letter: l, btn: btn});
+        document.getElementById(`slot-${currentAttempt.length - 1}`).innerText = l;
+        btn.style.visibility = 'hidden';
+      }
+    }
+
+    function clearSpell() {
+      currentAttempt.forEach(item => { item.btn.style.visibility = 'visible'; });
+      currentAttempt = [];
+      document.querySelectorAll('.spell-slot').forEach(slot => slot.innerText = '');
+    }
+
+    function submitSpell() {
+      if(currentAttempt.length !== sWordTarget.length) {
+        playFeedback('wrong'); 
+        return;
+      }
+      const attemptWord = currentAttempt.map(i => i.letter).join('');
+      if(attemptWord === sWordTarget) {
+        playFeedback('correct');
+      } else {
+        playFeedback('wrong');
+      }
+    }
+
+    function renderMCQ() {
+      let html = '';
+      mcqData.forEach((q, i) => {
+        html += `<div class="mcq-box"><p>${i+1}. ${q.q}</p>`;
+        q.opts.forEach(opt => {
+          html += `<button class="mcq-opt" onclick="checkMCQ(this, '${opt}', '${q.a}')">${opt}</button>`;
+        });
+        html += `</div>`;
+      });
+      document.getElementById('mcq-container').innerHTML = html;
+    }
+    function checkMCQ(btn, sel, ans) {
+      if(btn.parentElement.querySelector('.correct')) return; 
+      if(sel === ans) { 
+        btn.classList.add('correct'); playFeedback('correct'); 
+      } else { 
+        btn.classList.add('wrong'); playFeedback('wrong'); 
+      }
+    }
+
+    let draggedItem = null;
+    function renderSort() {
+      const src = document.getElementById('drag-source');
+      src.innerHTML = '';
+      [...sortData].sort(()=>Math.random()-0.5).forEach((d, i) => {
+        src.innerHTML += `<div class="drag-item" draggable="true" id="drag-${i}" data-cat="${d.cat}" ondragstart="drag(event)">${d.w}</div>`;
+      });
+      document.getElementById('zone-طيور').innerHTML = '<h3>طيور (Birds)</h3>';
+      document.getElementById('zone-حيوانات').innerHTML = '<h3>حيوانات (Animals)</h3>';
+    }
+    function drag(ev) { draggedItem = ev.target; }
+    function drop(ev) {
+      ev.preventDefault();
+      const zone = ev.target.closest('.sort-zone') || ev.target.closest('.draggable-items');
+      if(zone && draggedItem) {
+        if(zone.id.includes(draggedItem.dataset.cat)) {
+            zone.appendChild(draggedItem);
+            draggedItem.style.background = '#D1FAE5';
+            playFeedback('correct');
+        } else if (zone.id.includes('zone-')) {
+            document.getElementById('drag-source').appendChild(draggedItem);
+            playFeedback('wrong');
+        } else {
+            zone.appendChild(draggedItem);
+        }
+      }
+    }
+
+    /* -----------------------------------------------------------------
+       الشريحة 6: التلوين المتقدم (مع أداة الفرشاة والممحاة والتعبئة)
+       والمزرعة المرسومة برمجياً (لضمان عمل الـ Flood Fill بدون أخطاء CORS)
+       ----------------------------------------------------------------- */
+    const canvas = document.getElementById('paintCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    let painting = false;
+    let currentColor = '#EF4444'; 
+    let activeTool = 'brush'; // brush, fill, eraser
+
+    function setColor(btn, hex) {
+      currentColor = hex;
+      if (activeTool === 'eraser') setTool('brush'); // العودة للفرشاة تلقائياً عند اختيار لون
+      
+      // تغيير تصميم الزر النشط
+      document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active-color'));
+      btn.classList.add('active-color');
+    }
+
+    function setTool(tool) {
+      activeTool = tool;
+      document.querySelectorAll('#tool-brush, #tool-fill, #tool-eraser').forEach(btn => {
+        btn.classList.remove('active-tool');
+      });
+      document.getElementById('tool-' + tool).classList.add('active-tool');
+    }
+
+    // رسم مشهد المزرعة البرمجي
+    function drawFarmScene() {
+      ctx.fillStyle = "#FFFFFF"; 
+      ctx.fillRect(0, 0, 500, 300);
+      
+      ctx.lineWidth = 6; 
+      ctx.lineCap = "round"; 
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#1F2937"; // لون الخط الأسود/الداكن
+      
+      // الحظيرة (Barn)
+      ctx.beginPath();
+      ctx.moveTo(150, 250); ctx.lineTo(150, 150); 
+      ctx.lineTo(100, 150); ctx.lineTo(200, 70); ctx.lineTo(300, 150); ctx.lineTo(250, 150);
+      ctx.lineTo(250, 250); ctx.closePath(); 
+      ctx.stroke();
+      
+      // باب الحظيرة
+      ctx.beginPath();
+      ctx.moveTo(180, 250); ctx.lineTo(180, 180); ctx.lineTo(220, 180); ctx.lineTo(220, 250);
+      ctx.stroke();
+      
+      // الشمس
+      ctx.beginPath(); ctx.arc(400, 60, 35, 0, Math.PI*2); ctx.stroke();
+      
+      // الأرض (العشب)
+      ctx.beginPath(); ctx.moveTo(0, 250); ctx.lineTo(500, 250); ctx.stroke();
+
+      // الشجرة
+      ctx.beginPath(); ctx.moveTo(50, 250); ctx.lineTo(50, 180); ctx.moveTo(80, 250); ctx.lineTo(80, 180); ctx.stroke(); // الجذع
+      ctx.beginPath(); ctx.arc(65, 150, 40, 0, Math.PI*2); ctx.stroke(); // الأوراق
+    }
+
+    function initCanvas() {
+      drawFarmScene();
+    }
+
+    // دالة تحويل اللون (Hex) إلى (RGBA) من أجل التعبئة
+    function hexToRgba(hex) {
+      let r = 0, g = 0, b = 0;
+      if (hex.length === 7) {
+        r = parseInt(hex.substring(1, 3), 16);
+        g = parseInt(hex.substring(3, 5), 16);
+        b = parseInt(hex.substring(5, 7), 16);
+      }
+      return [r, g, b, 255];
+    }
+
+    // خوارزمية التعبئة (Flood Fill Algorithm)
+    function floodFill(startX, startY, fillColorHex) {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      const width = canvas.width;
+      const height = canvas.height;
+      const stack = [[startX, startY]];
+      
+      const fillRGBA = hexToRgba(fillColorHex);
+      const startPos = (startY * width + startX) * 4;
+      const startR = data[startPos];
+      const startG = data[startPos+1];
+      const startB = data[startPos+2];
+      const startA = data[startPos+3];
+
+      // إذا كان اللون الذي تم النقر عليه هو نفس لون التعبئة، نتوقف لتجنب التعليق
+      if(startR === fillRGBA[0] && startG === fillRGBA[1] && startB === fillRGBA[2] && startA === fillRGBA[3]) return;
+      // يمنع تعبئة الخطوط السوداء للمزرعة 
+      if(startR < 50 && startG < 50 && startB < 50) return;
+
+      while(stack.length > 0) {
+        const pt = stack.pop();
+        let x = pt[0];
+        let y = pt[1];
+        let currentPos = (y * width + x) * 4;
+        
+        while(y >= 0 && matchColor(currentPos)) {
+          y--;
+          currentPos -= width * 4;
+        }
+        currentPos += width * 4;
+        y++;
+        
+        let reachLeft = false;
+        let reachRight = false;
+        
+        while(y < height && matchColor(currentPos)) {
+          colorPixel(currentPos);
+          
+          if(x > 0) {
+            if(matchColor(currentPos - 4)) {
+              if(!reachLeft) { stack.push([x - 1, y]); reachLeft = true; }
+            } else if(reachLeft) { reachLeft = false; }
+          }
+          
+          if(x < width - 1) {
+            if(matchColor(currentPos + 4)) {
+              if(!reachRight) { stack.push([x + 1, y]); reachRight = true; }
+            } else if(reachRight) { reachRight = false; }
+          }
+          
+          y++;
+          currentPos += width * 4;
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      function matchColor(pos) {
+        return data[pos] === startR && data[pos+1] === startG && data[pos+2] === startB && data[pos+3] === startA;
+      }
+      function colorPixel(pos) {
+        data[pos] = fillRGBA[0]; data[pos+1] = fillRGBA[1]; data[pos+2] = fillRGBA[2]; data[pos+3] = fillRGBA[3];
+      }
+    }
+
+    function startPosition(e) { 
+      const rect = canvas.getBoundingClientRect();
+      let x = Math.floor((e.clientX || e.touches?.[0].clientX) - rect.left);
+      let y = Math.floor((e.clientY || e.touches?.[0].clientY) - rect.top);
+
+      if (activeTool === 'fill') {
+        floodFill(x, y, currentColor);
+        return; // لا نستدعي الرسم بالفرشاة
+      }
+
+      painting = true; 
+      draw(e); 
+    }
+
+    function endPosition() { painting = false; ctx.beginPath(); }
+    
+    function draw(e) {
+      if (!painting || activeTool === 'fill') return;
+      const rect = canvas.getBoundingClientRect();
+      let x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+      let y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+      
+      // إعدادات الممحاة والفرشاة
+      ctx.lineWidth = activeTool === 'eraser' ? 20 : 8;
+      ctx.strokeStyle = activeTool === 'eraser' ? '#FFFFFF' : currentColor;
+      
+      ctx.lineTo(x, y); 
+      ctx.stroke(); 
+      ctx.beginPath(); 
+      ctx.moveTo(x, y);
+    }
+    
+    canvas.addEventListener('mousedown', startPosition); 
+    canvas.addEventListener('mouseup', endPosition); 
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchstart', startPosition); 
+    canvas.addEventListener('touchend', endPosition); 
+    canvas.addEventListener('touchmove', e => { e.preventDefault(); draw(e); });
+
+    // -----------------------------------------------------------------
+
+    let isDrawingLine = false;
+    let startMatchItem = null;
+    let currentSvgLine = null;
+    const svgLayer = document.getElementById('match-svg');
+    const matchBoard = document.getElementById('match-board');
+
+    function renderMatch() {
+      const wCol = document.getElementById('m-words'); const iCol = document.getElementById('m-icons');
+      wCol.innerHTML = ''; iCol.innerHTML = ''; svgLayer.innerHTML = '';
+      let shuffledWords = [...vocabData].sort(()=>Math.random()-0.5).slice(0, 5);
+      let shuffledIcons = [...shuffledWords].sort(()=>Math.random()-0.5);
+      
+      shuffledWords.forEach(d => { wCol.innerHTML += `<div class="match-item draggable-word" data-w="${d.word}">${d.word}</div>`; });
+      shuffledIcons.forEach(d => { iCol.innerHTML += `<div class="match-item target-icon" data-w="${d.word}"><img src="${d.img}" onerror="this.src='https://via.placeholder.com/60?text=؟'"></div>`; });
+
+      document.querySelectorAll('.draggable-word').forEach(item => { item.addEventListener('pointerdown', startDrawLine); });
+    }
+
+    function startDrawLine(e) {
+      if(e.target.classList.contains('matched')) return;
+      isDrawingLine = true; startMatchItem = e.target;
+      const boardRect = matchBoard.getBoundingClientRect(); const startRect = startMatchItem.getBoundingClientRect();
+      const startX = startRect.left + startRect.width/2 - boardRect.left; const startY = startRect.top + startRect.height/2 - boardRect.top;
+
+      currentSvgLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      currentSvgLine.setAttribute('x1', startX); currentSvgLine.setAttribute('y1', startY); currentSvgLine.setAttribute('x2', startX); currentSvgLine.setAttribute('y2', startY);
+      currentSvgLine.setAttribute('stroke', '#3B82F6'); currentSvgLine.setAttribute('stroke-width', '6'); currentSvgLine.setAttribute('stroke-linecap', 'round');
+      currentSvgLine.style.pointerEvents = 'none'; svgLayer.appendChild(currentSvgLine);
+    }
+
+    window.addEventListener('pointermove', (e) => {
+      if(!isDrawingLine || !currentSvgLine) return;
+      const boardRect = matchBoard.getBoundingClientRect();
+      let x = e.clientX - boardRect.left; let y = e.clientY - boardRect.top;
+      currentSvgLine.setAttribute('x2', x); currentSvgLine.setAttribute('y2', y);
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      if(!isDrawingLine) return;
+      isDrawingLine = false;
+      let targetElement = document.elementFromPoint(e.clientX, e.clientY);
+      let targetIcon = targetElement ? targetElement.closest('.target-icon') : null;
+
+      if(targetIcon && !targetIcon.classList.contains('locked-wrong') && !targetIcon.classList.contains('matched')) {
+        const boardRect = matchBoard.getBoundingClientRect(); const targetRect = targetIcon.getBoundingClientRect();
+        const endX = targetRect.left + targetRect.width/2 - boardRect.left; const endY = targetRect.top + targetRect.height/2 - boardRect.top;
+        currentSvgLine.setAttribute('x2', endX); currentSvgLine.setAttribute('y2', endY);
+
+        if(startMatchItem.dataset.w === targetIcon.dataset.w) {
+          currentSvgLine.setAttribute('stroke', '#10B981'); startMatchItem.classList.add('matched'); targetIcon.classList.add('matched');
+          playFeedback('correct');
+        } else {
+          currentSvgLine.setAttribute('stroke', '#EF4444'); targetIcon.classList.add('locked-wrong');
+          playFeedback('wrong');
+        }
+      } else {
+        if(currentSvgLine) currentSvgLine.remove();
+      }
+      currentSvgLine = null; startMatchItem = null;
+    });
+
+    function renderHotspots() {
+      const cont = document.getElementById('hotspot-container');
+      cont.querySelectorAll('.hotspot-btn, .tooltip').forEach(e => e.remove());
+      hotspotData.forEach((h, i) => {
+        const btn = document.createElement('div'); btn.className = 'hotspot-btn'; btn.style.left = h.x; btn.style.top = h.y;
+        const tip = document.createElement('div'); tip.className = 'tooltip'; tip.innerText = h.label; tip.style.left = h.x; tip.style.top = h.y;
+        btn.onclick = () => { new Audio(h.audio).play(); tip.style.display = 'block'; setTimeout(() => tip.style.display = 'none', 2000); };
+        cont.appendChild(btn); cont.appendChild(tip);
+      });
+    }
+
+    function genCert() {
+      const name = document.getElementById('student-name').value;
+      if(!name) return alert('الرجاء كتابة اسمك!');
+      document.getElementById('display-name').innerText = name;
+    }
+    function downloadCert() {
+      html2canvas(document.getElementById('cert-node')).then(canvas => {
+        const link = document.createElement('a'); link.download = 'farm-animals-certificate.png'; link.href = canvas.toDataURL(); link.click();
+      });
+    }
+
+  </script>
+</body>
+</html>
